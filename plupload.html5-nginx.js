@@ -531,6 +531,7 @@
 								boundary = '----pluploadboundary' + plupload.guid(), formData, dashdash = '--', crlf = '\r\n', multipartBlob = '';
 								
 							xhr = new XMLHttpRequest;
+							xhr.timeout = 30000;
 															
 							// Do we have upload progress support
 							if (xhr.upload) {
@@ -551,15 +552,7 @@
 										httpStatus = 0;
 									}
 	
-									// Is error status
-									if (httpStatus >= 400) {
-										up.trigger('Error', {
-											code : plupload.HTTP_ERROR,
-											message : plupload.translate('HTTP Error.'),
-											file : file,
-											status : httpStatus
-										});
-									} else {
+									if(httpStatus==200 || httpStatus==201) {
 										// Handle chunk response
 										if (chunks) {
 											chunkArgs = {
@@ -599,7 +592,20 @@
 											// Still chunks left
 											uploadNextChunk();
 										}
-									}																	
+									} else if (httpStatus >= 400) {
+									    //Error happened
+                                        up.trigger('Error', {
+                                            code : plupload.HTTP_ERROR,
+                                            message : plupload.translate('HTTP Error.'),
+                                            file : file,
+                                            status : httpStatus
+                                        });
+                                    } else {
+									    //Try to send again and again while waiting for connection
+                                        setTimeout(function() {
+                                            prepareAndSend(bin);
+                                        }, 30000);
+									}
 								}
 							};
 							
