@@ -213,31 +213,29 @@
 			var features, xhr;
 
 			function addSelectedFiles(native_files) {
-				var file, i, files = [], id, fileNames = {};
+			    var file, i, files = [], id;
 
-				// Add the selected files to the file queue
-				for (i = 0; i < native_files.length; i++) {
-					file = native_files[i];
-										
-					// Safari on Windows will add first file from dragged set multiple times
-					// @see: https://bugs.webkit.org/show_bug.cgi?id=37957
-					if (fileNames[file.name]) {
-						continue;
-					}
-					fileNames[file.name] = true;
+                // Add the selected files to the file queue
+                for (i = 0; i < native_files.length; i++) {
+                    file = native_files[i];
 
-					// Store away gears blob internally
-					id = plupload.guid();
-					html5files[id] = file;
+                    id = jQuery.base64.encode(file.fileName || file.name).replace(/\+|=|\//g, '');
+                                        
+                    if (html5files[id] !== undefined) {
+                        continue;
+                    }
 
-					// Expose id, name and size
-					files.push(new plupload.File(id, file.fileName || file.name, file.fileSize || file.size)); // fileName / fileSize depricated
-				}
+                    // Store away gears blob internally
+                    html5files[id] = file;
 
-				// Trigger FilesAdded event if we added any
-				if (files.length) {
-					uploader.trigger("FilesAdded", files);
-				}
+                    // Expose id, name and size
+                    files.push(new plupload.File(id, file.fileName || file.name, file.fileSize || file.size)); // fileName / fileSize depricated
+                }
+
+                // Trigger FilesAdded event if we added any
+                if (files.length) {
+                    uploader.trigger("FilesAdded", files);
+                }
 			}
 
 			// No HTML5 upload support
